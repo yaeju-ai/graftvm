@@ -69,6 +69,16 @@ pub enum Opcode {
     // ── Control ──
     Jump(usize),
     Branch(usize),
+    /// Call a function: push return address onto return stack, jump to target.
+    Call(usize),
+    /// Return from a function: pop return address from return stack, jump back.
+    Ret,
+
+    // ── Argument passing (cross-window via arg stack) ──
+    /// Push a value from a slot onto the argument stack.
+    PushArg { src: Addr },
+    /// Pop a value from the argument stack into a slot.
+    PopArg { dst: Addr },
 
     // ── Constants ──
     StoreData { index: usize, data: Liternal },

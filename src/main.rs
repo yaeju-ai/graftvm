@@ -1,12 +1,14 @@
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     let mut debug = false;
+    let mut dump_only = false;
     let mut rest: Vec<String> = Vec::new();
 
     let mut i = 1;
     while i < args.len() {
         match args[i].as_str() {
             "-d" | "--debug" => debug = true,
+            "--dump" => dump_only = true,
             other => rest.push(other.to_string()),
         }
         i += 1;
@@ -28,6 +30,18 @@ fn main() {
             }
         }
     };
+
+    let tokens = graftvm_language::lexer::lex(&source);
+    let parsed = graftvm_language::parser::parse(&tokens).unwrap();
+    let bytecode = graftvm_language::lower::lower(parsed).unwrap();
+
+    if dump_only {
+        println!(";; bytecode: {} instructions", bytecode.len());
+        for (i, op) in bytecode.iter().enumerate() {
+            println!("  [{:>3}] {:?}", i, op);
+        }
+        return;
+    }
 
     match run(&source, debug) {
         Ok(bc) => {

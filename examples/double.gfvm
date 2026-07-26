@@ -1,0 +1,4 @@
+;; Simple non-recursive function call
+(infix + 3)
+(def double x (+ x x))
+(double 21)
