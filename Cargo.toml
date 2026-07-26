@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 graftvm_bytecode = { path = "graftvm_bytecode" }
 graftvm_language = { path = "graftvm_language" }
-graftvm_engine = { path = "graftvm_interpreter" }
+graftvm_interpreter = { path = "graftvm_interpreter" }
 graftvm_window = { path = "graftvm_window" }
 
 [workspace]
