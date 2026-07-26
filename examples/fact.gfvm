@@ -1,11 +1,8 @@
-;; Parlance example — Factorial
-
 (infix * 4)
 (infix < 2)
-
+(infix - 3)
 (def fact n
   (if (< n 2)
       1
       (* n (fact (- n 1)))))
-
-(fact 5)
+(fact 1)

@@ -22,6 +22,10 @@ pub struct VM {
     pub(super) window_stack: Vec<Window>,
     pub(super) constant_pool: HashMap<usize, Liternal>,
     pub(super) state: VMState,
+    /// Return-address stack for Call/Ret.
+    return_stack: Vec<usize>,
+    /// Argument stack for cross-window argument passing.
+    arg_stack: Vec<Liternal>,
 }
 
 // ── Width-dispatch macros used by arithmetic/bitwise/compare modules ──
@@ -96,6 +100,8 @@ impl VM {
             window_stack: vec![Window::new(0)],
             constant_pool: HashMap::new(),
             state: VMState::default(),
+            return_stack: Vec::new(),
+            arg_stack: Vec::new(),
         }
     }
 
@@ -137,6 +143,29 @@ impl VM {
                     self.pc = pc;
                 }
                 return Ok(());
+            }
+            Opcode::Call(target) => {
+                self.return_stack.push(self.pc + 1);
+                self.pc = target;
+                return Ok(());
+            }
+            Opcode::Ret => {
+                if let Some(ret_addr) = self.return_stack.pop() {
+                    self.pc = ret_addr;
+                } else {
+                    return Err("return stack empty".into());
+                }
+                return Ok(());
+            }
+
+            Opcode::PushArg { src } => {
+                let val = self.read_one(src)?;
+                self.arg_stack.push(val);
+            }
+            Opcode::PopArg { dst } => {
+                let val = self.arg_stack.pop()
+                    .ok_or_else(|| "argument stack empty".to_string())?;
+                *self.slot_mut(dst.slot) = Some(WindowSlot::from(val));
             }
 
             Opcode::StoreData { index, data } => self.store_data(index, data),
@@ -196,6 +225,9 @@ impl VM {
             }
         }
         println!(";; cmp flag: {}", self.state.cmp);
+        if !self.arg_stack.is_empty() {
+            println!(";; arg stack ({} items): {:?}", self.arg_stack.len(), self.arg_stack);
+        }
     }
 }
 

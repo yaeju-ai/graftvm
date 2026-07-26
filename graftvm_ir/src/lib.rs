@@ -40,7 +40,6 @@ pub struct Var {
 }
 
 /// A handle to a label for control-flow fixup.
-/// A handle to a label for control-flow fixup.
 #[derive(Clone, Debug)]
 pub struct Label {
     pub name: String,
@@ -274,6 +273,18 @@ impl IrBuilder {
         self.emit_op(Opcode::Drop { src: self.addr(var) });
     }
 
+    // ── Argument passing ──
+
+    /// Push a value from `src` onto the argument stack.
+    pub fn push_arg(&mut self, src: &Var) {
+        self.emit_op(Opcode::PushArg { src: self.addr(src) });
+    }
+
+    /// Pop a value from the argument stack into `dst`.
+    pub fn pop_arg(&mut self, dst: &Var) {
+        self.emit_op(Opcode::PopArg { dst: self.addr(dst) });
+    }
+
     // ── Control flow ──
 
     /// Create a named label.
@@ -286,11 +297,12 @@ impl IrBuilder {
         while i < self.label_fixups.len() {
             let (lbl, pos) = &self.label_fixups[i];
             if lbl == name {
-                // Replace the placeholder Opcode::Jump(0) with the real address
+                // Replace the placeholder opcode with the real address
                 let (op, _) = &self.bytecode[*pos];
                 let patched = match *op {
                     Opcode::Jump(_) => Opcode::Jump(idx),
                     Opcode::Branch(_) => Opcode::Branch(idx),
+                    Opcode::Call(_) => Opcode::Call(idx),
                     _ => unreachable!(),
                 };
                 self.bytecode[*pos].0 = patched;
@@ -325,20 +337,61 @@ impl IrBuilder {
         }
     }
 
+    /// Call a named function label.
+    /// The called function must end with `Exit` + `Ret`, which will pop the
+    /// child window and return here. This method tracks the window pop in the
+    /// compiler to keep `current_window` in sync with runtime.
+    pub fn call(&mut self, label: &str) {
+        let pos = self.bytecode.len();
+        if let Some(&target) = self.label_defs.get(label) {
+            self.emit_op(Opcode::Call(target));
+        } else {
+            self.emit_op(Opcode::Call(0));
+            self.label_fixups.push((label.to_string(), pos));
+        }
+        // The called function will Exit, popping one runtime window.
+        self.current_window = self.current_window.saturating_sub(1);
+    }
+
+    /// Return from a function.
+    pub fn ret(&mut self) {
+        self.emit_op(Opcode::Ret);
+    }
+
     // ── Scopes / Functions ──
 
     /// Enter a new window scope (e.g. function body).
+    /// Resets the slot counter for this window level so that fresh variable
+    /// allocation starts from slot 0.
     pub fn enter(&mut self) {
         self.current_window += 1;
         if self.current_window >= self.window_slot_len.len() {
             self.window_slot_len.push(0);
+        } else {
+            // Reset slot counter — this window level may have been used by a
+            // previous scope (e.g. a function body compiled with enter_silent).
+            self.window_slot_len[self.current_window] = 0;
         }
         self.emit_op(Opcode::Enter);
+    }
+
+    /// Enter a new window scope for tracking purposes only (no `Enter` opcode
+    /// emitted — the caller is responsible for emitting it).
+    pub fn enter_silent(&mut self) {
+        self.current_window += 1;
+        if self.current_window >= self.window_slot_len.len() {
+            self.window_slot_len.push(0);
+        }
     }
 
     /// Exit the current window scope.
     pub fn exit(&mut self) {
         self.emit_op(Opcode::Exit);
+        self.current_window = self.current_window.saturating_sub(1);
+    }
+
+    /// Exit tracking without emitting the `Exit` opcode.
+    pub fn exit_silent(&mut self) {
         self.current_window = self.current_window.saturating_sub(1);
     }
 

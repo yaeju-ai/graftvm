@@ -19,7 +19,7 @@ impl VM {
             Width::F32 => vl.expect_float()?.expect_f32()? < vr.expect_float()?.expect_f32()?,
             Width::F64 => vl.expect_float()?.expect_f64()? < vr.expect_float()?.expect_f64()?,
         };
-        *self.slot_mut(dst.slot) = Some(WindowSlot::from(Liternal::from(ok)));
+        *self.slot_mut(dst.slot) = Some(WindowSlot::from(Liternal::from(if ok { 1i64 } else { 0i64 })));
         Ok(())
     }
 
@@ -37,7 +37,7 @@ impl VM {
             Width::F32 => vl.expect_float()?.expect_f32()? <= vr.expect_float()?.expect_f32()?,
             Width::F64 => vl.expect_float()?.expect_f64()? <= vr.expect_float()?.expect_f64()?,
         };
-        *self.slot_mut(dst.slot) = Some(WindowSlot::from(Liternal::from(ok)));
+        *self.slot_mut(dst.slot) = Some(WindowSlot::from(Liternal::from(if ok { 1i64 } else { 0i64 })));
         Ok(())
     }
 
@@ -55,7 +55,7 @@ impl VM {
             Width::F32 => vl.expect_float()?.expect_f32()? > vr.expect_float()?.expect_f32()?,
             Width::F64 => vl.expect_float()?.expect_f64()? > vr.expect_float()?.expect_f64()?,
         };
-        *self.slot_mut(dst.slot) = Some(WindowSlot::from(Liternal::from(ok)));
+        *self.slot_mut(dst.slot) = Some(WindowSlot::from(Liternal::from(if ok { 1i64 } else { 0i64 })));
         Ok(())
     }
 
@@ -73,7 +73,7 @@ impl VM {
             Width::F32 => vl.expect_float()?.expect_f32()? >= vr.expect_float()?.expect_f32()?,
             Width::F64 => vl.expect_float()?.expect_f64()? >= vr.expect_float()?.expect_f64()?,
         };
-        *self.slot_mut(dst.slot) = Some(WindowSlot::from(Liternal::from(ok)));
+        *self.slot_mut(dst.slot) = Some(WindowSlot::from(Liternal::from(if ok { 1i64 } else { 0i64 })));
         Ok(())
     }
 

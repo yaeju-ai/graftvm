@@ -1,0 +1,6 @@
+(infix < 2)
+(def abs n
+  (if (< n 0)
+      (- 0 n)
+      n))
+(abs -5)
