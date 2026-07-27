@@ -64,7 +64,7 @@ fn run(source: &str, debug: bool) -> Result<Vec<graftvm_bytecode::Opcode>, Strin
     let parsed = graftvm_language::parser::parse(&tokens)?;
     let bytecode = graftvm_language::lower::lower(parsed)?;
 
-    let mut vm = graftvm_engine::vm::VM::new(bytecode.clone());
+    let mut vm = graftvm_interpreter::vm::VM::new(bytecode.clone());
 
     if debug {
         println!(";; ── execution trace ──");
