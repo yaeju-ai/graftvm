@@ -185,6 +185,17 @@ impl VM {
 
             Opcode::Enter => self.enter_window()?,
             Opcode::Exit => self.exit_window()?,
+
+            Opcode::Syscall { n, src, dst } => {
+                let val = self.read_one(src)?;
+                match n {
+                    0 => { // write: print to stdout
+                        println!("{}", val);
+                        *self.slot_mut(dst.slot) = Some(WindowSlot::from(val));
+                    }
+                    _ => return Err(format!("unknown syscall {}", n)),
+                }
+            }
         }
 
         self.pc += 1;

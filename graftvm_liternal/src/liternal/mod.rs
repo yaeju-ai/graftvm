@@ -1,4 +1,5 @@
 use std::fmt::Debug;
+use std::fmt;
 
 pub use crate::liternal::{float::Float, int::Int, uint::UInt};
 
@@ -90,6 +91,18 @@ impl Liternal {
         )
     }
 }
+impl fmt::Display for Liternal {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Liternal::Int(v) => write!(f, "{}", v),
+            Liternal::UInt(v) => write!(f, "{}", v),
+            Liternal::Float(v) => write!(f, "{}", v),
+            Liternal::String(v) => write!(f, "{}", v),
+            Liternal::Bool(v) => write!(f, "{}", v),
+        }
+    }
+}
+
 impl Debug for Liternal {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
