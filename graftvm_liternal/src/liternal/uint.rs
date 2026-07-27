@@ -1,3 +1,4 @@
+use std::fmt;
 use std::fmt::Debug;
 
 #[derive(Clone, PartialEq)]
@@ -52,8 +53,19 @@ impl UInt {
     }
 }
 
+impl fmt::Display for UInt {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::UInt8(v) => write!(f, "{}", v),
+            Self::UInt16(v) => write!(f, "{}", v),
+            Self::UInt32(v) => write!(f, "{}", v),
+            Self::UInt64(v) => write!(f, "{}", v),
+        }
+    }
+}
+
 impl Debug for UInt {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::UInt8(v) => write!(f, "UInt8({})", v),
             Self::UInt16(v) => write!(f, "UInt16({})", v),

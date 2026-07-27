@@ -1,4 +1,4 @@
-use std::fmt::Debug;
+use std::fmt;
 
 #[derive(Clone, PartialEq)]
 pub enum Float {
@@ -30,8 +30,17 @@ impl Float {
     }
 }
 
-impl Debug for Float {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for Float {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Float32(v) => write!(f, "{}", v),
+            Self::Float64(v) => write!(f, "{}", v),
+        }
+    }
+}
+
+impl fmt::Debug for Float {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Float32(v) => write!(f, "Float32({})", v),
             Self::Float64(v) => write!(f, "Float64({})", v),

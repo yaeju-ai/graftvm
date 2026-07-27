@@ -92,6 +92,10 @@ pub enum Opcode {
     // ── Window ──
     Enter,
     Exit,
+
+    // ── System ──
+    /// System call: n=0 → write(src to stdout), result stored in dst.
+    Syscall { n: u32, src: Addr, dst: Addr },
 }
 
 pub type Bytecode = Vec<Opcode>;

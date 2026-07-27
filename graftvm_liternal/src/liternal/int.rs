@@ -1,4 +1,5 @@
 use std::fmt::Debug;
+use std::fmt;
 
 #[derive(Clone, PartialEq)]
 pub enum Int {
@@ -49,6 +50,17 @@ impl Int {
     pub fn expect_i64(&self) -> Result<i64, String> {
         self.as_i64()
             .ok_or_else(|| format!("expected Int64, got {:?}", self))
+    }
+}
+
+impl fmt::Display for Int {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Int8(v) => write!(f, "{}", v),
+            Self::Int16(v) => write!(f, "{}", v),
+            Self::Int32(v) => write!(f, "{}", v),
+            Self::Int64(v) => write!(f, "{}", v),
+        }
     }
 }
 

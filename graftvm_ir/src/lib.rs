@@ -428,6 +428,17 @@ impl IrBuilder {
         self.exit();
     }
 
+    // ── System ──
+
+    /// Perform a system call: `n=0` writes `src` value to stdout, result in `dst`.
+    pub fn syscall(&mut self, n: u32, src: &Var, dst: &Var) {
+        self.emit_op(Opcode::Syscall {
+            n,
+            src: self.addr(src),
+            dst: self.addr(dst),
+        });
+    }
+
     // ── Build ──
 
     /// Consume the builder and produce the final bytecode.
