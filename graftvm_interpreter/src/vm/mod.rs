@@ -16,6 +16,9 @@ pub(super) struct VMState {
     pub cmp: bool,
 }
 
+/// Type of a native function: takes slice of arguments, returns a result.
+pub type NativeFn = fn(&[Liternal]) -> Result<Liternal, String>;
+
 pub struct VM {
     bytecode: Bytecode,
     pc: usize,
@@ -26,6 +29,8 @@ pub struct VM {
     return_stack: Vec<usize>,
     /// Argument stack for cross-window argument passing.
     arg_stack: Vec<Liternal>,
+    /// Native function table (registered by host at runtime, looked up by name).
+    native_table: HashMap<String, NativeFn>,
 }
 
 // ── Width-dispatch macros used by arithmetic/bitwise/compare modules ──
@@ -102,7 +107,13 @@ impl VM {
             state: VMState::default(),
             return_stack: Vec::new(),
             arg_stack: Vec::new(),
+            native_table: HashMap::new(),
         }
+    }
+
+    /// Register a native function by name.
+    pub fn register_native(&mut self, name: &str, f: NativeFn) {
+        self.native_table.insert(name.to_string(), f);
     }
 
     fn execute(&mut self, opcode: Opcode) -> Result<(), String> {
@@ -195,6 +206,22 @@ impl VM {
                     }
                     _ => return Err(format!("unknown syscall {}", n)),
                 }
+            }
+
+            Opcode::CallNative { name, arity } => {
+                // Pop `arity` values from the arg stack (in reverse order).
+                let mut args: Vec<Liternal> = Vec::with_capacity(arity as usize);
+                for _ in 0..arity {
+                    let val = self.arg_stack.pop()
+                        .ok_or_else(|| format!("CallNative: arg stack underflow (arity={})", arity))?;
+                    args.push(val);
+                }
+                args.reverse();
+
+                let native_fn = self.native_table.get(&name)
+                    .ok_or_else(|| format!("CallNative: unknown native '{}'", name))?;
+                let result = native_fn(&args)?;
+                self.arg_stack.push(result);
             }
         }
 

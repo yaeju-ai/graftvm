@@ -96,6 +96,8 @@ pub enum Opcode {
     // ── System ──
     /// System call: n=0 → write(src to stdout), result stored in dst.
     Syscall { n: u32, src: Addr, dst: Addr },
+    /// Call a native function by name (looked up in VM's native table at runtime).
+    CallNative { name: String, arity: u32 },
 }
 
 pub type Bytecode = Vec<Opcode>;

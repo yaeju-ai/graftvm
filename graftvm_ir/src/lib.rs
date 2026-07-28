@@ -439,6 +439,14 @@ impl IrBuilder {
         });
     }
 
+    /// Call a native function by name, popping `arity` args from the arg stack.
+    pub fn call_native(&mut self, name: &str, arity: u32) {
+        self.emit_op(Opcode::CallNative {
+            name: name.to_string(),
+            arity,
+        });
+    }
+
     // ── Build ──
 
     /// Consume the builder and produce the final bytecode.
